@@ -1,0 +1,28 @@
+image: docker:20
+
+services: ["docker:20-dind"]
+
+default:
+  tags: ["docker"]
+
+stages:
+- build
+
+variables:
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+
+build:
+  stage: build
+  before_script:
+  - echo $CI_REGISTRY_PASSWORD | docker login $CI_REGISTRY --username $CI_REGISTRY_USER --password-stdin
+  script:
+  - docker build -t ${IMAGE_TAG} ${BUILD_ARG} .
+  - docker push ${IMAGE_TAG}
+  rules:
+  - if: '$CI_COMMIT_TAG'
+    variables:
+      IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+      BUILD_ARG: --build-arg TRAC_VERSION=$CI_COMMIT_TAG
+  - if: '$CI_COMMIT_REF_NAME =~ /^main/ || $CI_PIPELINE_SOURCE == "merge_request_event"'
+    variables:
+      IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG

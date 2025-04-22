@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  trac:
+    image: trac-custom:latest
+    environment:
+    - TRAC_ADMIN_PASSWORD=pAsswOrd
+    - TRAC_PROJECT_NAME=Default
+    - TRAC_DB_STRING=postgres://trac_user:pAsswOrd@db:5432/trac_db
+    - TRAC_CONFIG_HEADER_LOGO__SRC=https://raw.githubusercontent.com/cncf/artwork/master/projects/kubernetes/horizontal/color/kubernetes-horizontal-color.png
+    - TRAC_CONFIG_HEADER_LOGO__HEIGHT=100
+    ports:
+    - 8000:8000
+
+  db:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_DB: trac_db
+      POSTGRES_USER: trac_user
+      POSTGRES_PASSWORD: pAsswOrd

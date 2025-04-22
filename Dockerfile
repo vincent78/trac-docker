@@ -1,0 +1,49 @@
+ARG PYTHON_VERSION="2.7"
+
+FROM python:${PYTHON_VERSION}-buster
+
+RUN apt-get update && \
+    apt-get install -y \
+        git \
+        libldap2-dev \
+        libsasl2-dev \
+        python2.7-dev
+
+COPY requirements-container.txt .
+
+ARG TRAC_VERSION="1.4.3"
+
+RUN pip install Trac[babel,rest,psycopg2-binary,pygments,textile]==${TRAC_VERSION} \
+    && pip install -r requirements-container.txt \
+    && rm requirements-container.txt
+
+ENV TRAC_BASE_DIR="/trac-projects"
+ENV TRAC_PROJECT_NAME="default"
+
+ARG USER_UNAME="trac"
+ARG USER_GNAME=${USER_UNAME}
+ARG USER_UID="931"
+ARG USER_GID=${USER_UID}
+
+RUN mkdir ${TRAC_BASE_DIR} \
+    && trac-admin \
+        ${TRAC_BASE_DIR}/${TRAC_PROJECT_NAME} \
+        initenv \
+        ${TRAC_PROJECT_NAME} \
+        sqlite:db/trac.db
+
+RUN addgroup --system --gid ${USER_GID} ${USER_GNAME} \
+    && adduser --system --uid ${USER_UID} --gid ${USER_GID} ${USER_UNAME} \
+    && chown -R ${USER_UNAME}:${USER_GNAME} ${TRAC_BASE_DIR}
+
+EXPOSE 8000
+
+COPY docker-entrypoint.sh /usr/local/bin/
+COPY scripts/* /usr/local/bin/
+
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
+    && chmod +x /usr/local/bin/manage.py
+
+USER ${USER_UNAME}
+
+ENTRYPOINT ["docker-entrypoint.sh"]
