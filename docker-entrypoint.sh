@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Runs on every start of the Trac Docker container
 
@@ -85,6 +85,8 @@ if [ -d "${project_path}/conf.d" ]; then
 fi
 
 echo "🎯 Starting TRAC"
+echo ".... project_path:" ${project_path}
+echo ".... extra_args:" ${extra_args}
 
 # Start TRAC standalone server
 exec tracd         \

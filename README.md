@@ -64,3 +64,23 @@ $ docker run -d -p 8000:8000 \
 
 - Only one superuser
 - Only `postgres` and `sqlite` can be used as database engines
+
+
+# remark
+```
+docker container stop  devcon \
+&& docker container remove devcon \
+&& docker image rm devtrac \
+&& docker build -f Dockerfile -t devtrac .
+
+docker container ls 
+
+docker run -it -d --name devcon -p 8000:8000 devtrac  \
+&& docker exec -it devcon sh
+
+docker exec -it --user root devcon  sh
+
+trac-admin /trac/default initenv default sqlite:db/trac.db
+
+tracd --single-env --port 8000 --protocol http  --http11 /trac/default  --group trac --user trac
+```
