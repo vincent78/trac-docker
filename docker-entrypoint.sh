@@ -95,5 +95,6 @@ exec tracd         \
   --protocol http  \
   --http11         \
   ${project_path}  \
-  --group trac     \
-  --user trac ${extra_args}
+  #--group trac     \
+  #--user trac \
+  ${extra_args}

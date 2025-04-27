@@ -4,56 +4,41 @@ ARG PYTHON_VERSION="3.12"
 FROM python:${PYTHON_VERSION}-rc-alpine
 
 
-
-# COPY requirements-container.txt .    
-RUN apk add git \    
-    && apk add sudo \
-    && pip install sqlite-utils --root-user-action=ignore \
-    && pip install babel==2.9.1 --root-user-action=ignore \
-    && pip install Jinja2 --root-user-action=ignore \
-    && pip install Trac==1.6 --root-user-action=ignore
-
-#    && pip install -r requirements-container.txt \
-#    && rm requirements-container.txt
-
-
-
-ENV TRAC_BASE_DIR="/trac"
-ENV TRAC_PROJECT_NAME="default"
-
-
-RUN mkdir ${TRAC_BASE_DIR} \
-    && trac-admin \
-        ${TRAC_BASE_DIR}/${TRAC_PROJECT_NAME} \
-        initenv \
-        ${TRAC_PROJECT_NAME} \
-        sqlite:db/trac.db    
-
-
 ARG USER_UNAME="trac"
 ARG USER_GNAME=${USER_UNAME}
 ARG USER_UID="931"
 ARG USER_GID=${USER_UID}
+#ARG TRAC_BASE_DIR="/trac"
+
+ENV TRAC_BASE_DIR="/trac"
+ENV TRAC_PROJECT_NAME="default"
 
 RUN addgroup -S -g ${USER_GID} ${USER_GNAME} \
-    && adduser -S -u ${USER_UID} -g ${USER_GID} ${USER_UNAME} sudo \
-    && echo "${USER_UNAME}:1" | chpasswd \
-    && echo "trac ALL=(ALL:ALL) NOPASSWD: ALL" | sudo tee -a /etc/sudoers.d/trac \
-    && chown -R ${USER_UNAME}:${USER_GNAME} ${TRAC_BASE_DIR}
-    
-   
-EXPOSE 8000  
+    && adduser -S -u ${USER_UID} -g ${USER_GID} ${USER_UNAME}
 
+  
 COPY docker-entrypoint.sh /usr/local/bin/
 COPY scripts/* /usr/local/bin/   
+COPY requirements-container.txt .  
 
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
     && chmod +x /usr/local/bin/manage.py  \
-    && chown ${USER_UNAME}:${USER_GNAME} /usr/local/bin/docker-entrypoint.sh 
+    && mkdir -p ${TRAC_BASE_DIR} \    
+    && apk update && apk add git --no-cache \
+    && pip install sqlite-utils  \
+    && pip install babel==2.9.1  \
+    && pip install Jinja2 \
+    && pip install Trac==1.6  \
+    && pip install -r requirements-container.txt \
+    && rm -rf requirements-container.txt \
+    && trac-admin ${TRAC_BASE_DIR}/${TRAC_PROJECT_NAME} initenv ${TRAC_PROJECT_NAME} sqlite:db/trac.db  \
+    && chown -R ${USER_UNAME}:${USER_GNAME} ${TRAC_BASE_DIR} 
 
-
+    
 USER ${USER_UNAME} 
 
+EXPOSE 8000  
+
 # 执行命令
-CMD ["sh"]
-# ENTRYPOINT ["docker-entrypoint.sh"]
+# CMD ["sh"]
+ENTRYPOINT ["docker-entrypoint.sh"]

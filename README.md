@@ -83,4 +83,9 @@ docker exec -it --user root devcon  sh
 trac-admin /trac/default initenv default sqlite:db/trac.db
 
 tracd --single-env --port 8000 --protocol http  --http11 /trac/default  --group trac --user trac
+
+
+# 创建密码文件htpasswd (password: 123456)
+> htpasswd -cb admin.htpasswd admin 123456
+
 ```
