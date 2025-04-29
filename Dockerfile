@@ -29,6 +29,7 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
     && pip install babel==2.9.1  \
     && pip install Jinja2 \
     && pip install Trac==1.6  \
+    && pip install TracAccountManager \
     && pip install -r requirements-container.txt \
     && rm -rf requirements-container.txt \
     && trac-admin ${TRAC_BASE_DIR}/${TRAC_PROJECT_NAME} initenv ${TRAC_PROJECT_NAME} sqlite:db/trac.db  \

@@ -53,7 +53,7 @@ if [ -n "${TRAC_ADMIN_PASSWORD}" ]; then
   password=${TRAC_ADMIN_PASSWORD}
   path_to_file="${project_path}/conf/users.htdigest"
   echo ${user}:${realm}:$(printf "${user}:${realm}:${password}" | md5sum - | sed -e 's/\s\+-//') > ${path_to_file}
-  extra_args="--auth="default,${path_to_file},${TRAC_PROJECT_NAME}""
+  extra_args="--auth=\"default,${path_to_file},${TRAC_PROJECT_NAME}\""
   trac-admin ${project_path} permission add ${user} TRAC_ADMIN
 fi
 
@@ -89,12 +89,15 @@ echo ".... project_path:" ${project_path}
 echo ".... extra_args:" ${extra_args}
 
 # Start TRAC standalone server
-exec tracd         \
-  --single-env     \
-  --port 8000      \
-  --protocol http  \
-  --http11         \
-  ${project_path}  \
-  #--group trac     \
-  #--user trac \
-  ${extra_args}
+# exec tracd         \
+#   --single-env     \
+#   --port 8000      \
+#   --protocol http  \
+#   --http11         \
+#   ${project_path}  \
+#   #--group trac     \
+#   #--user trac \
+#   ${extra_args}
+
+tracd --single-env --port 8000 --protocol http  --http11 /trac/default  --auth="default,/trac/default/conf/users.htdigest,default"
+

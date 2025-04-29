@@ -68,24 +68,30 @@ $ docker run -d -p 8000:8000 \
 
 # remark
 ```
-docker container stop  devcon \
-&& docker container remove devcon \
-&& docker image rm devtrac \
-&& docker build -f Dockerfile -t devtrac .
+docker container stop  trac \
+&& docker container remove trac \
+&& docker image rm trac:0.0.1 \
+&& docker build -f Dockerfile -t trac:0.0.1 .
 
 docker container ls 
 
-docker run -it -d --name devcon -p 8000:8000 devtrac  \
-&& docker exec -it devcon sh
+docker run -it -d --name trac \
+-e TRAC_ADMIN_PASSWORD="123456" \
+-p 8000:8000 trac:0.0.1  \
+&& docker exec -it trac sh
 
-docker exec -it --user root devcon  sh
+docker exec -it --user root trac  sh
 
 trac-admin /trac/default initenv default sqlite:db/trac.db
 
 tracd --single-env --port 8000 --protocol http  --http11 /trac/default  --group trac --user trac
 
+exec tracd --single-env --port 8000 --protocol http  --http11 /trac/default  --auth="default,/trac/default/conf/users.htdigest,default"
 
 # 创建密码文件htpasswd (password: 123456)
 > htpasswd -cb admin.htpasswd admin 123456
+
+# digest
+> echo admin:default:$(printf "admin:defalut:123456" | md5sum - | sed -e 's/\s\+-//') > /trac/default/conf/users.htdigest
 
 ```
